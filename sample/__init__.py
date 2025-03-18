@@ -1,8 +1,7 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from dbService.db import db
 
-db = SQLAlchemy()  
 migrate = Migrate()
 
 def create_app():
@@ -13,6 +12,6 @@ def create_app():
     migrate.init_app(app, db)
 
     with app.app_context():
-        from sample import views  
+        import views  
 
     return app

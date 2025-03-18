@@ -1,9 +1,6 @@
-# from flask_sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy
 
-# db = SQLAlchemy()
-
-
-from sample import db
+from dbService.db import db
 
 class BaseRepository:
     """Generic repository for CRUD operations on any SQLAlchemy model."""
