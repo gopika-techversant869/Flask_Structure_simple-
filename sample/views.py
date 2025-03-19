@@ -12,7 +12,7 @@ user_service = UserService()
 @validate()
 def add_user(body: UserCreate):
     """Handles POST request, sends data to service layer."""
-    user = user_service.create_user(body)  # Passes validated request data to service
+    user = user_service.create_user(body)  
     return jsonify({"id": user.id, "name": user.name, "email": user.email}), 201
 
 @bp.route("/users", methods=["GET"])

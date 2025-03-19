@@ -6,10 +6,9 @@ class UserService:
     """Handles business logic for Users."""
 
     def __init__(self):
-        self.repository = BaseRepository(User)  # Pass User model dynamically
+        self.repository = BaseRepository(User)  
 
     def create_user(self, user_data: UserCreate):
-        """Business logic before inserting into DB"""
         user = User(name=user_data.name, email=user_data.email)
         return self.repository.create(user)
 
