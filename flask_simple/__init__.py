@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_migrate import Migrate
-from flask_simple.dbService.db import db
+from flask_simple.db_service.db import db
 from flask_simple.config import config
 
 

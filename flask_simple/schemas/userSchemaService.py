@@ -1,12 +1,12 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, constr
+from typing import Optional
 
-class UserCreate(BaseModel):
+class RegisterSchema(BaseModel):
     name: str
     email: EmailStr
-
-class UserResponse(BaseModel):
-    id: int
-    name: str
-    email: EmailStr
+    phone: Optional[str]
+    address: Optional[str]
+    password: constr(min_length=6)
+    role: str
 
 
