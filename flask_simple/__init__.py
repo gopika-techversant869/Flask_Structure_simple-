@@ -18,5 +18,5 @@ def create_app():
         from flask_simple.routes.user_routes import bp
         app.register_blueprint(bp, url_prefix="/api")
 
-        db.create_all()  
+
     return app

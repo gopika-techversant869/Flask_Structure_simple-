@@ -10,5 +10,4 @@ bp = Blueprint("users", __name__)
 @validate()
 def add_user(body: RegisterSchema):
     user = UserRegisterServiceImpl()
-    return user.register_user(request)
-
+    return user.register_user(body)

@@ -3,10 +3,9 @@ from typing import Optional
 
 class RegisterSchema(BaseModel):
     name: str
-    email: EmailStr
+    user_email: EmailStr
     phone: Optional[str]
     address: Optional[str]
-    password: constr(min_length=6)
     role: str
 
 

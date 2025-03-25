@@ -18,7 +18,7 @@ class DBService:
                 obj = table(**data)
                 db.session.add(obj)
                 db.session.commit()
-                return obj.id  # Return SQL record ID
+                return obj  
         except (SQLAlchemyError, PyMongoError) as e:
             db.session.rollback()
             return {"error": str(e)}

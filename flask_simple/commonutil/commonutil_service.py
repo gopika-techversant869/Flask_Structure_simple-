@@ -1,15 +1,37 @@
 
-
+ 
+import datetime
+import uuid
 from flask import jsonify
 
-class CommonResponse:
+class CommonJsonResponse:
 
-    def create_response(resp_type, message="", data=None, error=None, status_code=200):
-        """Standardized JSON response format"""
+    def common_response(status="success", message="", data=None, error=None, pagination=None,status_code = None):
+        """
+        Standardized API response format with omitted null values"
+        """
+            
         response = {
-            "resp_type": resp_type,
+            "status": status,
             "message": message,
-            "data": data,
-            "error": error
-        }
-        return jsonify(response), status_code
+            "meta": {
+                "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
+                "request_id": str(uuid.uuid4())
+            }
+            }
+
+        if data is not None:
+            response["data"] = data
+        
+        if error is not None:
+            response["error"] = error
+
+        if pagination:
+            response["meta"]["pagination"] = pagination
+
+        if status_code:
+            response['status_code'] = status_code
+        
+
+        return jsonify(response)
+
