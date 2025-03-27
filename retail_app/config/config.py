@@ -17,6 +17,13 @@ class Config:
     JWT_SECRET_KEY = "d570f75df2a2a47e4e920589360fb10998bd19cdd863e7e1"
     JWT_ACCESS_TOKEN_EXPIRES = 900  
     JWT_REFRESH_TOKEN_EXPIRES = 86400  
+    MAIL_SERVER = 'smtp.gmail.com'          
+    MAIL_PORT = 587                         
+    MAIL_USE_TLS = True                     
+    MAIL_USE_SSL = False                    
+    MAIL_USERNAME = 'gopika.na@techversantinfotech.com'  
+    MAIL_PASSWORD = 'dfsk bqce dibw emag'     
+    MAIL_DEFAULT_SENDER = ('Gopika', 'gopika.na@techversantinfotech.com')
 
 
 

@@ -1,10 +1,12 @@
 from flask import Flask
 from flask_migrate import Migrate
-from flask_simple.db_service.db import db
-from flask_simple.config import config
+from retail_app.db_service.db import db
+from retail_app.config import config
+from retail_app.extensions import mail
 
 
 migrate = Migrate()
+
 
 def create_app():
     app = Flask(__name__)
@@ -13,9 +15,10 @@ def create_app():
 
     db.init_app(app)
     migrate.init_app(app, db)
+    mail.init_app(app)
 
     with app.app_context():
-        from flask_simple.routes.user_routes import bp
+        from retail_app.routes.user_routes import bp
         app.register_blueprint(bp, url_prefix="/api")
 
 

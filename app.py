@@ -1,4 +1,4 @@
-from flask_simple import create_app
+from retail_app import create_app
 
 app = create_app()
 

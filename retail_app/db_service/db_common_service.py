@@ -1,4 +1,4 @@
-from flask_simple.db_service.db import db, mongo
+from retail_app.db_service.db import db, mongo
 from sqlalchemy.exc import SQLAlchemyError
 from pymongo.errors import PyMongoError
 

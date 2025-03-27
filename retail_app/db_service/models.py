@@ -1,4 +1,4 @@
-from flask_simple.db_service.db import db
+from retail_app.db_service.db import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_bcrypt import Bcrypt
 import uuid
