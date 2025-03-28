@@ -57,7 +57,7 @@ from retail_app.db_service.db import db
 from retail_app.db_service.db_common_service import DBService
 import datetime
 from retail_app.commonutil.commonutil_service import CommonJsonResponse
-from retail_app.commonutil.commonutil_service import PasswordGenerator,EmailService
+from retail_app.commonutil.commonutil_service import PasswordGenerator,EmailService,EncryptDecryptService
 from flask_bcrypt import Bcrypt
 import logging
 import re
@@ -72,9 +72,6 @@ class UserRegisterServiceImpl:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
         
-
- 
-
     def validate_email(self, email):
         email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
         return re.match(email_pattern, email) is not None
@@ -178,10 +175,19 @@ class UserRegisterServiceImpl:
                     )
 
                 self.logger.info(f"Successfully registered user: {data.user_email}")
+
+                resp_dict = {
+                            "login_id":"",
+                            "user_name":""}
+                enc_obj = EncryptDecryptService()
+                
+                encrypt_resp = enc_obj.encrypt_aes_gcm(resp_dict)
+                print("encrypt_resp",encrypt_resp)
                 
                 return CommonJsonResponse.common_response(
                     "SUCCESS",
                     "User registered successfully. Please check your email for temporary password.",
+                    data = encrypt_resp,
                     status_code=201
                 )
 

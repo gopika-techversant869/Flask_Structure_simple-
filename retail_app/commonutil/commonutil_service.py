@@ -44,6 +44,7 @@ import secrets
 import string
 from flask_mail import Message
 from retail_app.extensions import mail
+from retail_app.config.config import Config
 
 class CommonJsonResponse:
     """
@@ -160,19 +161,41 @@ class EmailService:
 
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
+from Crypto.Cipher import AES
+import base64
+import json
 
-def encrypt_aes_gcm(plaintext: bytes, key: bytes, nonce: bytes, aad: bytes = b""):
-    cipher = Cipher(algorithms.AES(key), modes.GCM(nonce), backend=default_backend())
-    encryptor = cipher.encryptor()
-    encryptor.authenticate_additional_data(aad)
+class EncryptDecryptService:
 
-    ciphertext = encryptor.update(plaintext) + encryptor.finalize()
-    return ciphertext, encryptor.tag
+    def __init__(self):
+        self.key = bytes.fromhex(Config.ENCRYPT_KEY)
+        self.nounce = bytes.fromhex(Config.ENCRYPT_NONCE)
 
-def decrypt_aes_gcm(ciphertext: bytes, tag: bytes, key: bytes, nonce: bytes, aad: bytes = b""):
-    cipher = Cipher(algorithms.AES(key), modes.GCM(nonce, tag), backend=default_backend())
-    decryptor = cipher.decryptor()
-    decryptor.authenticate_additional_data(aad)
+    def encrypt_aes_gcm(self,plaintext):
+        plaintext = json.dumps(plaintext).encode('utf-8')
+        cipher = AES.new(self.key, AES.MODE_GCM, nonce=self.nounce)
+        ciphertext, tag = cipher.encrypt_and_digest(plaintext)
+        encrypt_data = base64.b64encode(ciphertext).decode('utf-8')
+        encrypt_tag = base64.b64encode(tag).decode('utf-8')
+        resp ={"data": encrypt_data, "tag": encrypt_tag}
+        return resp
 
-    plaintext = decryptor.update(ciphertext) + decryptor.finalize()
-    return plaintext
+        
+    def decrypt_aes_gcm(self, encrypted_data: str, tag: str):
+        try:
+            print("encrypted_data", encrypted_data, tag)
+            ciphertext = base64.b64decode(encrypted_data)
+            tag = base64.b64decode(tag)
+            
+            cipher = AES.new(self.key, AES.MODE_GCM, nonce=self.nounce)
+            print("cipher",cipher)
+            decrypted_text = cipher.decrypt_and_verify(ciphertext, tag)
+            print("decrypted_text", decrypted_text)
+
+            resp = decrypted_text.decode('utf-8')
+            print("type",type(resp))
+            return resp
+            
+        except ValueError:
+            return jsonify({"error": "Decryption failed! Invalid key, nonce, or tampered data."}), 400
+

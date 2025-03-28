@@ -26,5 +26,8 @@ class Config:
     MAIL_DEFAULT_SENDER = ('Gopika', 'gopika.na@techversantinfotech.com')
 
 
+    ENCRYPT_KEY = "4f39fced64abffb9beea2101cf7e125de6fa2725fe002e6b050509ddaea458d0"
+    ENCRYPT_NONCE = "35d49b27e079b09a371c9093"
+
 
    
