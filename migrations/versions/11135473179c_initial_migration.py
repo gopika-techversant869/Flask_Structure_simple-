@@ -1,8 +1,8 @@
 """Initial migration
 
-Revision ID: 697d9a080ff8
+Revision ID: 11135473179c
 Revises: 
-Create Date: 2025-03-25 12:47:19.370264
+Create Date: 2025-04-01 15:16:40.126985
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '697d9a080ff8'
+revision = '11135473179c'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -24,6 +24,8 @@ def upgrade():
     sa.Column('email', sa.String(length=100), nullable=False),
     sa.Column('phone', sa.String(length=15), nullable=True),
     sa.Column('address', sa.Text(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email'),
     sa.UniqueConstraint('phone')
@@ -31,12 +33,17 @@ def upgrade():
     op.create_table('user_auth',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('customer_id', sa.String(length=36), nullable=False),
+    sa.Column('username', sa.String(length=50), nullable=False),
     sa.Column('password', sa.String(length=255), nullable=False),
     sa.Column('role', sa.String(length=20), nullable=True),
     sa.Column('login_attempts', sa.Integer(), nullable=True),
+    sa.Column('is_active', sa.Boolean(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['customer_id'], ['customer.id'], ),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('customer_id')
+    sa.UniqueConstraint('customer_id'),
+    sa.UniqueConstraint('username')
     )
     # ### end Alembic commands ###
 

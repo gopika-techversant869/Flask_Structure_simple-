@@ -13,7 +13,7 @@ class DBService:
         try:
             if is_mongo:
                 result = mongo.db[table].insert_one(data)
-                return str(result.inserted_id)  # Return MongoDB ObjectID as string
+                return str(result.inserted_id) 
             else:
                 obj = table(**data)
                 db.session.add(obj)

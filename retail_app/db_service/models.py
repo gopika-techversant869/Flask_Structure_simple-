@@ -2,6 +2,7 @@ from retail_app.db_service.db import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_bcrypt import Bcrypt
 import uuid
+import datetime
 
 
 # class User(db.Model):
@@ -26,18 +27,31 @@ class Customer(db.Model):
     email = db.Column(db.String(100), unique=True, nullable=False)
     phone = db.Column(db.String(15), unique=True, nullable=True)
     address = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 
     user_auth = db.relationship("UserAuth", backref="customer", uselist=False, cascade="all, delete-orphan")
 
 class UserAuth(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)  # Auto-incrementing PK for auth
     customer_id = db.Column(db.String(36), db.ForeignKey("customer.id"), unique=True, nullable=False)  # FK uses UUID
+    username = db.Column(db.String(50), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
-    role = db.Column(db.String(20), default="user")  # "admin" or "user"
+    role = db.Column(db.String(20), default="user")  
     login_attempts = db.Column(db.Integer, default=0)
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 
     def set_password(self, password):
         self.password = Bcrypt.generate_password_hash(password).decode('utf-8')
 
     def check_password(self, password):
         return Bcrypt.check_password_hash(self.password, password)
+
+
+class TokenBlacklist(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    token = db.Column(db.String(500), unique=True, nullable=False)
+    blacklisted_on = db.Column(db.DateTime, nullable=False, default=datetime.datetime.utcnow)
+    expires_at = db.Column(db.DateTime, nullable=False)

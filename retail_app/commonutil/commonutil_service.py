@@ -114,17 +114,15 @@ class PasswordGenerator:
         special_chars = "!@#$%^&*"
         
         password = [
-            secrets.choice(letters.upper()),    # One uppercase
+            secrets.choice(letters.upper()),  
             secrets.choice(letters.lower()),   
             secrets.choice(digits),             
             secrets.choice(special_chars),      
         ]
         
-        # Fill rest of the password
         all_characters = letters + digits + special_chars
-        password.extend(secrets.choice(all_characters) for _ in range(8))  # Add 8 more chars
+        password.extend(secrets.choice(all_characters) for _ in range(8)) 
         
-        # Shuffle the password characters
         secrets.SystemRandom().shuffle(password)
         
         return ''.join(password)
@@ -136,6 +134,8 @@ from retail_app.extensions import mail
 class EmailService:
 
     def send_email(subject, recipients, body, html=None):
+
+        print("hhhhh",recipients)
         msg = Message(
             subject=subject,
             recipients=recipients,

@@ -65,12 +65,24 @@ from sqlalchemy.exc import SQLAlchemyError
 import secrets
 import string
 import os
+from werkzeug.security import generate_password_hash
+
+from retail_app.commonutil.commonutil_service import PasswordGenerator,EmailService,EncryptDecryptService
+from flask_bcrypt import Bcrypt
+import logging
+import re
+from sqlalchemy.exc import SQLAlchemyError
+import secrets
+import string
+import os
 
 bcrypt = Bcrypt()
+
 
 class UserRegisterServiceImpl:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
+
         
     def validate_email(self, email):
         email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
@@ -84,7 +96,7 @@ class UserRegisterServiceImpl:
         try:
             self.logger.info(f"Processing registration request for email: {data.user_email}")
 
-            # Input validation
+        
             if not all([data.name, data.user_email, data.phone]):
                 return CommonJsonResponse.common_response(
                     message="All fields are required",
@@ -103,7 +115,6 @@ class UserRegisterServiceImpl:
                     status_code=400
                 )
 
-            # Check for existing user
             existing_customer = DBService.find_one(
                 Customer,
                 {"email": data.user_email},
@@ -117,15 +128,15 @@ class UserRegisterServiceImpl:
                     
                 )
 
-            # Generate temporary password
             obj = PasswordGenerator()
             temp_password = obj.generate_secure_password()
             print("password:",temp_password)
+            # hash_pwd = generate_password_hash(temp_password)
             hash_pwd = bcrypt.generate_password_hash(temp_password).decode('utf-8')
 
-            # Start database transaction
+
+          
             try:
-                # Create customer record
                 cust_data = {
                     "name": data.name,
                     "email": data.user_email,
@@ -134,29 +145,28 @@ class UserRegisterServiceImpl:
                     
                 }
                 
-                # new_customer = DBService.create_record(
-                #     Customer,
-                #     cust_data,
-                #     is_mongo=False
-                # )
-
-                # Create auth record
-                # auth_data = {
-                #     "customer_id": new_customer.id,
-                #     "password": hash_pwd,
-                #     "role": data.role if hasattr(data, 'role') else "user",
-                #     "login_attempts": 0,
-                    # Flag to force password change on first login
-                # }
+                new_customer = DBService.create_record(
+                    Customer,
+                    cust_data,
+                    is_mongo=False
+                )
+                print("new customer",new_customer)
+                auth_data = {
+                    "customer_id": new_customer.id,
+                    "password": hash_pwd,
+                    "role": data.role if hasattr(data, 'role') else "user",
+                    "login_attempts": 0,
+                    "is_active": True,
+                    "username": data.user_email
+                }
                 
-                # auth_insert = DBService.create_record(
-                #     UserAuth,
-                #     auth_data,
-                #     is_mongo=False
-                # )
+                auth_insert = DBService.create_record(
+                    UserAuth,
+                    auth_data,
+                    is_mongo=False
+                )
               
-                # Send temporary password via email
-                # email_sent = self.send_password_email(data.user_email, temp_password, data.name)
+              
                 try:
                     email_sent = EmailService.send_email(
                         subject="Your Temporary Password",
@@ -195,7 +205,7 @@ class UserRegisterServiceImpl:
                 db.session.rollback()
                 self.logger.error(f"Database error during registration: {str(e)}")
                 return CommonJsonResponse.common_response(
-                    message="Registration failed due to database error",
+                    message=f"Registration failed due to database error:{str(e)}",
                     status_code=500
                 )
 

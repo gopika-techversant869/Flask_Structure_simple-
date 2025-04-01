@@ -85,7 +85,11 @@ from flask import request, jsonify
 import json
 from retail_app.commonutil.commonutil_service import EncryptDecryptService
 
-def decrypt_request_data(schema=None):  # <-- Accept schema as argument
+def decrypt_request_data(schema=None):  
+    """
+    It decrypts the every request at routes level.
+    """
+
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
@@ -103,7 +107,6 @@ def decrypt_request_data(schema=None):  # <-- Accept schema as argument
                 if not ciphertext or not tag:
                     return {"error": "Missing ciphertext or tag"}, 400
 
-                # Decrypt Data
                 enc_obj = EncryptDecryptService()
                 decrypted_data = enc_obj.decrypt_aes_gcm(ciphertext, tag)
 
@@ -112,7 +115,6 @@ def decrypt_request_data(schema=None):  # <-- Accept schema as argument
                 else:
                     decoded_data = decrypted_data  
 
-                # ✅ If a schema is provided, validate the data
                 if schema:
                     try:
                         validated_data = schema(**decoded_data)  # Dynamically validate
@@ -128,3 +130,52 @@ def decrypt_request_data(schema=None):  # <-- Accept schema as argument
 
         return decorated_function
     return decorator
+
+
+from functools import wraps
+from flask import request, jsonify
+import jwt
+from retail_app. config.config import Config
+# from retail_app.db_service.models import User
+
+def verify_token(token):
+    """Verify JWT token and return payload"""
+    try:
+        payload = jwt.decode(token, Config.JWT_SECRET_KEY, algorithms=["HS256"])
+        user = User.query.get(payload['sub'])
+        
+        if not user or not user.is_active:
+            return None
+            
+        if user.token_version != payload['token_version']:
+            return None
+            
+        return payload
+    except:
+        return None
+
+def require_auth(roles=[]):
+    """Decorator for role-based access control"""
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            auth_header = request.headers.get('Authorization')
+            
+            if not auth_header or not auth_header.startswith('Bearer '):
+                return jsonify({"error": "Missing or invalid authorization header"}), 401
+
+            token = auth_header.split(' ')[1]
+            payload = verify_token(token)
+
+            if not payload:
+                return jsonify({"error": "Invalid or expired token"}), 401
+
+            if roles and payload['role'] not in roles:
+                return jsonify({"error": "Insufficient permissions"}), 403
+
+            request.user = payload
+            return f(*args, **kwargs)
+
+        return decorated_function
+    return decorator
+

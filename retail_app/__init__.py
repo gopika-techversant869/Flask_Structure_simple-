@@ -19,7 +19,7 @@ def create_app():
 
     with app.app_context():
         from retail_app.routes.user_routes import bp
+        from retail_app.routes.auth_route import auth_bp
         app.register_blueprint(bp, url_prefix="/api")
-
-
+        app.register_blueprint(auth_bp, url_prefix="/auth/api")
     return app

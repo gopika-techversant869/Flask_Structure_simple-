@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_pydantic import validate
 from retail_app.schemas.userSchemaService import RegisterSchema
 from retail_app.service.uesr_reg_service import UserRegisterServiceImpl
-from retail_app.decorators import decrypt_request_data
+from retail_app.middleware import decrypt_request_data
 
 
 bp = Blueprint("users", __name__)

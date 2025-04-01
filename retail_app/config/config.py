@@ -24,6 +24,7 @@ class Config:
     MAIL_USERNAME = 'gopika.na@techversantinfotech.com'  
     MAIL_PASSWORD = 'dfsk bqce dibw emag'     
     MAIL_DEFAULT_SENDER = ('Gopika', 'gopika.na@techversantinfotech.com')
+    MAX_LOGIN_ATTEMPTS = 3
 
 
     ENCRYPT_KEY = "4f39fced64abffb9beea2101cf7e125de6fa2725fe002e6b050509ddaea458d0"
