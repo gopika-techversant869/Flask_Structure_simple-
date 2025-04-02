@@ -7,14 +7,27 @@ from pymongo.errors import PyMongoError
 class DBService:
     """Common Database Service for PostgreSQL & MongoDB"""
 
-    @staticmethod
+    
     @staticmethod
     def create_record(table, data, is_mongo=False):
         try:
             if is_mongo:
-                result = mongo.db[table].insert_one(data)
-                return str(result.inserted_id) 
+                if not isinstance(data, dict):
+                  raise ValueError("  ERROR: Data must be a dictionary!")
+                
+                print(f"db.{table}.insertOne({data})")
+                collection_name = table.__name__.lower()
+
+
+                print("data",type(data.get('name')))
+                print("table",table)
+                result = mongo.db[collection_name].insert_one(data)
+                # return result
+                data["_id"] = str(result.inserted_id)  # Convert ObjectId to string
+
+                return data
             else:
+                print("table",table)
                 obj = table(**data)
                 db.session.add(obj)
                 db.session.commit()

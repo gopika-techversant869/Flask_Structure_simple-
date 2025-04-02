@@ -144,12 +144,15 @@ class UserRegisterServiceImpl:
                     "address": data.address,
                     
                 }
-                
-                new_customer = DBService.create_record(
-                    Customer,
-                    cust_data,
-                    is_mongo=False
-                )
+                 
+                new_customer = DBService.create_record(Customer,cust_data,is_mongo=False)
+                print("new customer",new_customer)
+                print("type",type(data.name))
+                try:
+                    mongo_data = DBService.create_record(Customer, cust_data, is_mongo=True)
+                except Exception as e:
+                    print("Error",e)
+
                 print("new customer",new_customer)
                 auth_data = {
                     "customer_id": new_customer.id,

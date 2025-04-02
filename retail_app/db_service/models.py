@@ -43,6 +43,11 @@ class UserAuth(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 
+    token_version = db.Column(db.Integer, default=0)
+    last_login = db.Column(db.DateTime)
+    refresh_tokens = db.Column(db.JSON, default=list)  
+    locked_until = db.Column(db.DateTime)
+
     def set_password(self, password):
         self.password = Bcrypt.generate_password_hash(password).decode('utf-8')
 
@@ -55,3 +60,14 @@ class TokenBlacklist(db.Model):
     token = db.Column(db.String(500), unique=True, nullable=False)
     blacklisted_on = db.Column(db.DateTime, nullable=False, default=datetime.datetime.utcnow)
     expires_at = db.Column(db.DateTime, nullable=False)
+
+
+class Products(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text)
+    category = db.Column(db.String(50), nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    stock_quantity = db.Column(db.Integer, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)

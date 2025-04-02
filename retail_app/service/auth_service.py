@@ -13,7 +13,7 @@ from retail_app.db_service.models import Customer
 from retail_app.db_service.models import UserAuth
 from retail_app.commonutil.commonutil_service import CommonJsonResponse
 from retail_app.db_service.db_common_service import DBService
-
+from retail_app.commonutil.commonutil_service import EncryptDecryptService
 
 
 bcrypt = Bcrypt()
@@ -33,7 +33,6 @@ class AuthService:
             "role": user.role,
             "type": "access",
             "jti": jti,
-            "token_version": user.token_version,
             "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=Config.TOKEN_EXPIRE_MINUTES)
         }
 
@@ -41,7 +40,6 @@ class AuthService:
             "sub": user.id,
             "type": "refresh",
             "jti": str(uuid.uuid4()),
-            "token_version": user.token_version,
             "exp": datetime.datetime.utcnow() + datetime.timedelta(days=Config.REFRESH_TOKEN_EXPIRE_DAYS)
         }
 
@@ -53,6 +51,7 @@ class AuthService:
 
     def login_user(self,data):
         """Handle user login with security measures"""
+
         try:
             user = DBService.find_one(UserAuth,{"username": data.username},is_mongo=False)
             print("user data",user.is_active)
@@ -63,51 +62,40 @@ class AuthService:
             if not user.is_active:
                 return CommonJsonResponse.common_response(status = "FAILURE",message="User not active",status_code=403)
 
-            # if user.login_attempts >= Config.MAX_LOGIN_ATTEMPTS:
-            #     return CommonJsonResponse.common_response(status="FAILURE",message="Account has been locked!please contact the support",status_code=403)
-            # hash_pwd = generate_password_hash(data.password)
-
-            # print("hash_pwd", hash_pwd) 
-            # print("pwd",user.password)          
-            #     user.login_attempts += 1
-            #     if user.login_attempts >= Config.MAX_LOGIN_ATTEMPTS:
-            #         user.is_active = False
-            #     db.session.commit()
-            #     return CommonJsonResponse.common_response(message="Invalid credentials", status_code=401)
-            hash_pwd = bcrypt.generate_password_hash(data.password).decode('utf-8')
-            print("hasg=h",hash_pwd)
-            print("db pass",user.password)
-
-
-            if hash_pwd != user.password:
+            if not bcrypt.check_password_hash(user.password, data.password):
                 update_data = {"login_attempts": user.login_attempts + 1}
-
+                
                 if user.login_attempts + 1 >= Config.MAX_LOGIN_ATTEMPTS:
                     update_data["is_active"] = False
-
+                
                 DBService.update_record(UserAuth, {"id": user.id}, update_data, is_mongo=False)
-
                 return CommonJsonResponse.common_response(message="Invalid credentials", status_code=401)
 
             DBService.update_record(UserAuth, {"id": user.id}, {"failed_attempts": 0, "last_login": datetime.datetime.utcnow()}, is_mongo=False)
 
-
             access_token, refresh_token = AuthService.generate_tokens(user)
-
+            
             resp_dict = {
                 "access_token":access_token,
                 "refresh_token":refresh_token,
                 "role":user.role,
                 "username":user.username
             }
-            return CommonJsonResponse.common_response(status="SUCCESS",message="Login successful", data=resp_dict, status_code=200)
+
+            enc_obj = EncryptDecryptService()
+            
+            encrypt_resp = enc_obj.encrypt_aes_gcm(resp_dict)
+            print("encrypt_resp",encrypt_resp)
+            return CommonJsonResponse.common_response(status="SUCCESS",message="Login successful", data=encrypt_resp, status_code=200)
 
         except Exception as e:
             current_app.logger.error(f"Login error: {str(e)}")
             return jsonify({"error": "Login failed"}), 500
+        
 
     def refresh_access_token(refresh_token):
         """Generate new access token using refresh token"""
+
         try:
             payload = jwt.decode(
                 refresh_token,

@@ -12,8 +12,17 @@ class Config:
     SQLALCHEMY_DATABASE_URI = f"postgresql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    MONGO_USERNAME = "test"
+    MONGO_PASSWORD = "Tech%4097"
+    MONGO_HOST = "localhost"
+    MONGO_DB = "test_db"
 
-    SECRET_KEY = "211d73fe054939ff242fcf535e05d075c8a93b97aeae6081"
+
+
+    MONGO_URI =  f"mongodb://{MONGO_USERNAME}:{MONGO_PASSWORD}@{MONGO_HOST}/{MONGO_DB}?authSource=admin"
+
+
+    JWT_REFRESH_SECRET_KEY = "211d73fe054939ff242fcf535e05d075c8a93b97aeae6081"
     JWT_SECRET_KEY = "d570f75df2a2a47e4e920589360fb10998bd19cdd863e7e1"
     JWT_ACCESS_TOKEN_EXPIRES = 900  
     JWT_REFRESH_TOKEN_EXPIRES = 86400  
@@ -25,7 +34,8 @@ class Config:
     MAIL_PASSWORD = 'dfsk bqce dibw emag'     
     MAIL_DEFAULT_SENDER = ('Gopika', 'gopika.na@techversantinfotech.com')
     MAX_LOGIN_ATTEMPTS = 3
-
+    TOKEN_EXPIRE_MINUTES = 5
+    REFRESH_TOKEN_EXPIRE_DAYS = 7
 
     ENCRYPT_KEY = "4f39fced64abffb9beea2101cf7e125de6fa2725fe002e6b050509ddaea458d0"
     ENCRYPT_NONCE = "35d49b27e079b09a371c9093"
