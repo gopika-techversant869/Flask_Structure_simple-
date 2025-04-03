@@ -1,5 +1,6 @@
 import jwt
 import datetime
+from datetime import timedelta
 import uuid
 from flask_bcrypt import Bcrypt
 from werkzeug.security import generate_password_hash
@@ -23,31 +24,42 @@ class AuthService:
     def __init__(self):
         self.logger = current_app.logger
 
-    def generate_tokens(user):
-        """Generate both Access and Refresh JWT Tokens"""
-        jti = str(uuid.uuid4())
-        
-        access_payload = {
-            "sub": user.id,
-            "username": user.username,
-            "role": user.role,
-            "type": "access",
-            "jti": jti,
-            "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=Config.TOKEN_EXPIRE_MINUTES)
-        }
+    def generate_tokens(self,user_data):
+        """Generate both access and refresh tokens"""
 
-        refresh_payload = {
-            "sub": user.id,
-            "type": "refresh",
-            "jti": str(uuid.uuid4()),
-            "exp": datetime.datetime.utcnow() + datetime.timedelta(days=Config.REFRESH_TOKEN_EXPIRE_DAYS)
-        }
-
-        access_token = jwt.encode(access_payload, Config.JWT_SECRET_KEY, algorithm="HS256")
-        refresh_token = jwt.encode(refresh_payload, Config.JWT_REFRESH_SECRET_KEY, algorithm="HS256")
-
-        return access_token, refresh_token
-            # Successful login
+        try:
+            current_time = datetime.utcnow()
+            
+            access_payload = {
+                'sub': user_data.get('customer_id'),
+                'email': user_data.get('username'),
+                'role': user_data.get('role'),
+                'type': 'access',
+                'jti': str(uuid.uuid4()),
+                'iat': current_time,
+                'exp': current_time + timedelta(minutes = Config.JWT_ACCESS_TOKEN_EXPIRES)
+            }
+            
+            refresh_payload = {
+                'user_id': user_data.get('customer_id'),
+                'type': 'refresh',
+                'jti': str(uuid.uuid4()),
+                'iat': current_time,
+                'exp': current_time + timedelta(days = Config.REFRESH_TOKEN_EXPIRE_DAYS)
+            }
+            
+            access_token = jwt.encode(access_payload,Config.JWT_SECRET_KEY,algorithm='HS256')
+            refresh_token = jwt.encode(refresh_payload,self.refresh_secret,algorithm='HS256')
+            
+            return {
+                'access_token': access_token,
+                'refresh_token': refresh_token,
+                'token_type': 'Bearer',
+                'expires_in': Config.JWT_ACCESS_TOKEN_EXPIRES * 60  
+            }
+            
+        except Exception as e:
+            raise Exception(f"Token generation failed: {str(e)}")
 
     def login_user(self,data):
         """Handle user login with security measures"""
@@ -55,13 +67,18 @@ class AuthService:
         try:
             user = DBService.find_one(UserAuth,{"username": data.username},is_mongo=False)
             print("user data",user.is_active)
-            
             if not user:
-               return CommonJsonResponse.common_response(status="FAILURE",message="User not found",status_code=400)
-
+               return CommonJsonResponse.common_response(
+                                                        status="FAILURE",
+                                                        message="User not found",
+                                                        status_code=400
+                                                        )
             if not user.is_active:
-                return CommonJsonResponse.common_response(status = "FAILURE",message="User not active",status_code=403)
-
+                return CommonJsonResponse.common_response(
+                                                        status = "FAILURE",
+                                                        message="User not active",
+                                                        status_code=403
+                                                        )
             if not bcrypt.check_password_hash(user.password, data.password):
                 update_data = {"login_attempts": user.login_attempts + 1}
                 
@@ -69,15 +86,21 @@ class AuthService:
                     update_data["is_active"] = False
                 
                 DBService.update_record(UserAuth, {"id": user.id}, update_data, is_mongo=False)
-                return CommonJsonResponse.common_response(message="Invalid credentials", status_code=401)
+                return CommonJsonResponse.common_response(
+                                                        status = "FAILURE",
+                                                        message="Invalid credentials", 
+                                                        status_code=401
+                                                        )
 
             DBService.update_record(UserAuth, {"id": user.id}, {"failed_attempts": 0, "last_login": datetime.datetime.utcnow()}, is_mongo=False)
 
-            access_token, refresh_token = AuthService.generate_tokens(user)
+            token = AuthService.generate_tokens(user)
             
             resp_dict = {
-                "access_token":access_token,
-                "refresh_token":refresh_token,
+                "access_token":token.get('access_token'),
+                "refresh_token":token.get('refresh_token'),
+                "token_type":token.get('token_type'),
+                "expires_in":token.get('expires_in'),
                 "role":user.role,
                 "username":user.username
             }

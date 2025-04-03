@@ -19,10 +19,30 @@ import datetime
 #         return check_password_hash(self.password_hash, password)
 
 def generate_uuid():
-    return str(uuid.uuid4())  # Generates a unique string-based UUID
+    return str(uuid.uuid4()) 
+
+class UserAuth(db.Model):
+    __tablename__ = 'user_auth' 
+    
+    login_id = db.Column(db.String(36), primary_key=True, default=generate_uuid())  
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    password = db.Column(db.String(255), nullable=False)
+    role = db.Column(db.String(20), default="user")
+    is_active = db.Column(db.Boolean, default=True)
+    login_attempts = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    last_login = db.Column(db.DateTime)
+
+
+    customers = db.relationship('Customer', back_populates='user_auth')  
 
 class Customer(db.Model):
-    id = db.Column(db.String(36), primary_key=True, default=generate_uuid)  
+    __tablename__ = 'customer'  
+
+    customer_id = db.Column(db.String(36), primary_key=True, default=generate_uuid())  
+    login_id = db.Column(db.String(36), db.ForeignKey('user_auth.login_id'), nullable=False)
+
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
     phone = db.Column(db.String(15), unique=True, nullable=True)
@@ -30,29 +50,10 @@ class Customer(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 
-    user_auth = db.relationship("UserAuth", backref="customer", uselist=False, cascade="all, delete-orphan")
+   
+    user_auth = db.relationship('UserAuth', back_populates='customers')  
 
-class UserAuth(db.Model):
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)  # Auto-incrementing PK for auth
-    customer_id = db.Column(db.String(36), db.ForeignKey("customer.id"), unique=True, nullable=False)  # FK uses UUID
-    username = db.Column(db.String(50), unique=True, nullable=False)
-    password = db.Column(db.String(255), nullable=False)
-    role = db.Column(db.String(20), default="user")  
-    login_attempts = db.Column(db.Integer, default=0)
-    is_active = db.Column(db.Boolean, default=True)
-    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 
-    token_version = db.Column(db.Integer, default=0)
-    last_login = db.Column(db.DateTime)
-    refresh_tokens = db.Column(db.JSON, default=list)  
-    locked_until = db.Column(db.DateTime)
-
-    def set_password(self, password):
-        self.password = Bcrypt.generate_password_hash(password).decode('utf-8')
-
-    def check_password(self, password):
-        return Bcrypt.check_password_hash(self.password, password)
 
 
 class TokenBlacklist(db.Model):
@@ -62,12 +63,12 @@ class TokenBlacklist(db.Model):
     expires_at = db.Column(db.DateTime, nullable=False)
 
 
-class Products(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text)
-    category = db.Column(db.String(50), nullable=False)
-    price = db.Column(db.Float, nullable=False)
-    stock_quantity = db.Column(db.Integer, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+# class Products(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     name = db.Column(db.String(100), nullable=False)
+#     description = db.Column(db.Text)
+#     category = db.Column(db.String(50), nullable=False)
+#     price = db.Column(db.Float, nullable=False)
+#     stock_quantity = db.Column(db.Integer, nullable=False)
+#     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+#     updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)

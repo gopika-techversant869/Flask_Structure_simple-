@@ -133,8 +133,27 @@ class UserRegisterServiceImpl:
             print("password:",temp_password)
             # hash_pwd = generate_password_hash(temp_password)
             hash_pwd = bcrypt.generate_password_hash(temp_password).decode('utf-8')
-
-
+            try:
+                auth_data = {
+                        "password": hash_pwd,
+                        "role": data.role if hasattr(data, 'role') else "user",
+                        "login_attempts": 0,
+                        "is_active": True,
+                        "username": data.user_email
+                    }
+                    
+                auth_insert = DBService.create_record(
+                    UserAuth,
+                    auth_data,
+                    is_mongo=False
+                )
+            except Exception as e:
+                print("exception triggered", e)
+            
+            try:
+                mongo_login = DBService.create_record(UserAuth,auth_data,is_mongo=True)
+            except Exception as e:
+                print("exception triggered",e)
           
             try:
                 cust_data = {
@@ -149,26 +168,13 @@ class UserRegisterServiceImpl:
                 print("new customer",new_customer)
                 print("type",type(data.name))
                 try:
+                    cust_data['customer_id'] = new_customer.customer_id
                     mongo_data = DBService.create_record(Customer, cust_data, is_mongo=True)
                 except Exception as e:
                     print("Error",e)
 
-                print("new customer",new_customer)
-                auth_data = {
-                    "customer_id": new_customer.id,
-                    "password": hash_pwd,
-                    "role": data.role if hasattr(data, 'role') else "user",
-                    "login_attempts": 0,
-                    "is_active": True,
-                    "username": data.user_email
-                }
+               
                 
-                auth_insert = DBService.create_record(
-                    UserAuth,
-                    auth_data,
-                    is_mongo=False
-                )
-              
               
                 try:
                     email_sent = EmailService.send_email(

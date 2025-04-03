@@ -19,7 +19,7 @@ def create_app():
     migrate.init_app(app, db)
     mail.init_app(app)
     mongo.init_app(app)
-    migrate.init_app(app,mongo)
+    # migrate.init_app(app,mongo)
 
     with app.app_context():
         from retail_app.routes.user_routes import bp

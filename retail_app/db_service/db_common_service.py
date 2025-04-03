@@ -10,6 +10,7 @@ class DBService:
     
     @staticmethod
     def create_record(table, data, is_mongo=False):
+        print("data", data)
         try:
             if is_mongo:
                 if not isinstance(data, dict):
@@ -27,11 +28,17 @@ class DBService:
 
                 return data
             else:
-                print("table",table)
-                obj = table(**data)
-                db.session.add(obj)
-                db.session.commit()
-                return obj  
+                try:
+                    print("table",table)
+                    obj = table(**data)
+                    db.session.add(obj)
+                    db.session.commit()
+                    return obj 
+                # return {"message": "Record created successfully"}
+                except SQLAlchemyError as e:
+                    db.session.rollback()
+                    return {"error": str(e)}
+
         except (SQLAlchemyError, PyMongoError) as e:
             db.session.rollback()
             return {"error": str(e)}
