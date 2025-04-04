@@ -1,39 +1,4 @@
 
- 
-# import datetime
-# import uuid
-# from flask import jsonify
-
-# class CommonJsonResponse:
-
-#     def common_response(status="success", message="", data=None, error=None, pagination=None,status_code = None):
-#         """
-#         Standardized API response format with omitted null values"
-#         """
-            
-#         response = {
-#             "status": status,
-#             "message": message,
-#             "meta": {
-#                 "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
-#                 "request_id": str(uuid.uuid4())
-#             }
-#             }
-
-#         if data is not None:
-#             response["data"] = data
-        
-#         if error is not None:
-#             response["error"] = error
-
-#         if pagination:
-#             response["meta"]["pagination"] = pagination
-
-#         if status_code:
-#             response['status_code'] = status_code
-        
-
-#         return jsonify(response)
 
 from typing import Optional, Union, Dict, Any, Tuple
 from flask import jsonify
@@ -45,6 +10,13 @@ import string
 from flask_mail import Message
 from retail_app.extensions import mail
 from retail_app.config.config import Config
+
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.backends import default_backend
+from Crypto.Cipher import AES
+import base64
+import json
+import re
 
 class CommonJsonResponse:
     """
@@ -146,25 +118,6 @@ class EmailService:
         return True
 
 
-# class EmailService:
-
-#     from retail_app.commonutil import mail
-
-#     def send_mail(self):
-#         msg = Message(subject="Hello from Flask!",
-#                     recipients=["gopika.na@techversantinfotech.com"],
-#                     body="This is a test email sent from a Flask app.")
-#         mail.send(msg)
-#         return "Email sent!"
-
-
-
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.backends import default_backend
-from Crypto.Cipher import AES
-import base64
-import json
-
 class EncryptDecryptService:
 
     def __init__(self):
@@ -199,3 +152,15 @@ class EncryptDecryptService:
         except ValueError:
             return jsonify({"error": "Decryption failed! Invalid key, nonce, or tampered data."}), 400
 
+
+class validationService:
+    def validate_email(self, email):
+        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        return re.match(email_pattern, email) is not None
+
+    def validate_phone(self, phone):
+        phone_pattern = r'^\d{10}$'
+        return re.match(phone_pattern, phone) is not None
+
+
+    

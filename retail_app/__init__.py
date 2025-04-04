@@ -1,3 +1,4 @@
+import logging
 from flask import Flask
 from flask_migrate import Migrate
 from retail_app.db_service.db import db
@@ -6,11 +7,22 @@ from retail_app.config import config
 from retail_app.extensions import mail
 
 
+
 migrate = Migrate()
 
 
 def create_app():
     app = Flask(__name__)
+
+    logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s | %(levelname)s | %(filename)s | %(funcName)s | Line:%(lineno)d | %(message)s",
+    handlers=[
+        logging.StreamHandler()  
+    ]
+)
+
+
     app.config.from_object(config.Config)
     print("Config Loaded:", app.config["SQLALCHEMY_DATABASE_URI"]) 
     print("Config Loaded:", app.config["MONGO_URI"])
