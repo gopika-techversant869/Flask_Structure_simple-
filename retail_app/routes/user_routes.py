@@ -18,3 +18,6 @@ def add_user(decrypted_json: RegisterSchema):
         print("error", e)
     user = UserRegisterServiceImpl()
     return user.register_user(decrypted_json)
+
+
+

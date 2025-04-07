@@ -4,6 +4,16 @@ from typing import Optional
 
 
 
+class OTPSchema(BaseModel):
+    email: EmailStr
+    phone: str
+
+class OtpVerificationSchema(BaseModel):
+    login_id: str
+    otp: str
+    otp_token:str
+    
+
 
 class LoginSchema(BaseModel):
     username: constr(strip_whitespace=True,min_length=3,max_length=50)

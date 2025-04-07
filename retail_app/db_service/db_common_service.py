@@ -44,12 +44,12 @@ class DBService:
             db.session.rollback()
             return {"error": str(e)}
 
-    # @staticmethod
-    # def find_one(table, filters, is_mongo=False):
-    #     if is_mongo:
-    #         return mongo.db[table].find_one(filters)
-    #     else:
-    #         return table.query.filter_by(**filters).first()
+    @staticmethod
+    def find_one(table, filters, is_mongo=False):
+        if is_mongo:
+            return mongo.db[table].find_one(filters)
+        else:
+            return table.query.filter_by(**filters).first()
 
     @staticmethod
     def find_all(table, filters={}, is_mongo=False):
@@ -87,7 +87,7 @@ class DBService:
 
 
     @staticmethod
-    def find_one(table, filters, is_mongo=False, join_table=None, join_field=None, 
+    def join_table(table, filters, is_mongo=False, join_table=None, join_field=None, 
                 local_field=None, foreign_field=None):
         if is_mongo:
             # MongoDB Query
@@ -110,9 +110,13 @@ class DBService:
 
         # PostgreSQL (SQLAlchemy) Query
         query = table.query.filter_by(**filters)
+        print("qqqqqqqqqqqqqqqqqqq",query)
         
-        if join_table and join_field:
-            query = query.join(join_table, getattr(table, join_field) == getattr(join_table, join_field))
-        
+        if join_table and local_field and foreign_field:
+            query = query.join(
+                join_table,
+                getattr(table, local_field) == getattr(join_table, foreign_field)
+            )
+
         return query.first()
 

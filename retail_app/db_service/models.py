@@ -25,8 +25,8 @@ class UserAuth(db.Model):
     __tablename__ = 'user_auth' 
     
     login_id = db.Column(db.String(36), primary_key=True, default=generate_uuid())  
-    username = db.Column(db.String(50), unique=True, nullable=False)
-    password = db.Column(db.String(255), nullable=False)
+    username = db.Column(db.String(50), unique=True, nullable=False,default = "")
+    password = db.Column(db.String(255), nullable=False,default="")
     role = db.Column(db.String(20), default="user")
     is_active = db.Column(db.Boolean, default=True)
     login_attempts = db.Column(db.Integer, default=0)
@@ -43,13 +43,12 @@ class Customer(db.Model):
     customer_id = db.Column(db.String(36), primary_key=True, default=generate_uuid())  
     login_id = db.Column(db.String(36), db.ForeignKey('user_auth.login_id'), nullable=False)
 
-    name = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(100), unique=True, nullable=False)
-    phone = db.Column(db.String(15), unique=True, nullable=True)
-    address = db.Column(db.Text, nullable=True)
+    name = db.Column(db.String(100), nullable=False,default = "")
+    email = db.Column(db.String(100), unique=True, nullable=False,default = "")
+    phone = db.Column(db.String(15), unique=True, nullable=True,default = "")
+    address = db.Column(db.Text, nullable=True,default = "")
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
-
    
     user_auth = db.relationship('UserAuth', back_populates='customers')  
 

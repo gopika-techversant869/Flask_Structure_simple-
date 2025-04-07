@@ -187,7 +187,6 @@ class UserRegisterServiceImpl:
                     email_sent = False
                 
                 if not email_sent:
-                    db.session.rollback()
                     return CommonJsonResponse.common_response("failure",
                         message="User registration failed - Unable to send email",
                         status_code=500

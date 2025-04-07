@@ -2,24 +2,58 @@ from flask import Blueprint, request, jsonify
 from retail_app.middleware import require_auth
 # from retail_app.db_service.models import User
 from retail_app.schemas.userSchemaService import LoginSchema
+from retail_app.schemas.userSchemaService import OTPSchema
+from retail_app.schemas.userSchemaService import OtpVerificationSchema
 from retail_app.middleware import decrypt_request_data
 from retail_app.service.auth_service import AuthService
+from retail_app.service.signup_service import OtpCreation
+from retail_app.service.signup_service import OtpVerification
+
 
 auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/login', methods=['POST'])
 @decrypt_request_data(schema = LoginSchema)
 def login(decrypted_json:LoginSchema):
-    # data = request.get_json()
-    # if not data or 'username' not in data or 'password' not in data:
-    #     return jsonify({"error": "Username and password required"}), 400
-    # return login_user(data['username'], data['password'])
     try:
         print("req_daat",decrypted_json)
     except Exception as e:
         print("error", e)
     user = AuthService()
     return user.login_user(decrypted_json)
+
+
+
+@auth_bp.route('/otp/creation', methods=['POST'])
+@decrypt_request_data(schema = OTPSchema )
+def opt_creation(decrypted_json:OTPSchema):
+    try:
+        print("req_daat",decrypted_json)
+    except Exception as e:
+        print("error", e)
+    user = OtpCreation()
+    return user.get_otp(decrypted_json)
+
+
+@auth_bp.route('/otp/verification', methods=['POST'])
+@decrypt_request_data(schema = OtpVerificationSchema )
+def otp_verification(decrypted_json:OtpVerificationSchema):
+    try:
+        print("req_daat",decrypted_json)
+    except Exception as e:
+        print("error", e)
+    user = OtpVerification()
+    return user.otp_verification(decrypted_json)
+
+
+
+
+
+
+
+
+
+
 
 @auth_bp.route('/refresh', methods=['POST'])
 def refresh_token():
