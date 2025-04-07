@@ -12,6 +12,10 @@ class OtpVerificationSchema(BaseModel):
     login_id: str
     otp: str
     otp_token:str
+
+class CompleteProfileSchema(BaseModel):
+    login_id: str
+    password: str
     
 
 

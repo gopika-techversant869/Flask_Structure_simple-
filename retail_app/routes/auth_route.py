@@ -4,10 +4,12 @@ from retail_app.middleware import require_auth
 from retail_app.schemas.userSchemaService import LoginSchema
 from retail_app.schemas.userSchemaService import OTPSchema
 from retail_app.schemas.userSchemaService import OtpVerificationSchema
+from retail_app.schemas.userSchemaService import CompleteProfileSchema
 from retail_app.middleware import decrypt_request_data
 from retail_app.service.auth_service import AuthService
 from retail_app.service.signup_service import OtpCreation
 from retail_app.service.signup_service import OtpVerification
+from retail_app.service.signup_service import AccountCreation
 
 
 auth_bp = Blueprint('auth', __name__)
@@ -45,6 +47,26 @@ def otp_verification(decrypted_json:OtpVerificationSchema):
     user = OtpVerification()
     return user.otp_verification(decrypted_json)
 
+@auth_bp.route('/otp/creation', methods=['POST'])
+@decrypt_request_data(schema = OTPSchema )
+def opt_creation(decrypted_json:OTPSchema):
+    try:
+        print("req_daat",decrypted_json)
+    except Exception as e:
+        print("error", e)
+    user = OtpCreation()
+    return user.get_otp(decrypted_json)
+
+
+@auth_bp.route('/complete/profile', methods=['POST'])
+@decrypt_request_data(schema = CompleteProfileSchema )
+def otp_verification(decrypted_json:CompleteProfileSchema):
+    try:
+        print("req_daat",decrypted_json)
+    except Exception as e:
+        print("error", e)
+    user = AccountCreation()
+    return user.account_creation(decrypted_json)
 
 
 
